@@ -4,13 +4,14 @@ import pandas as pd
 import numpy as np
 import scipy
 import sklearn
+from datetime import date
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.metrics import mean_squared_error
 import mlflow
 import xgboost as xgb
 from prefect import flow, task
 from prefect.artifacts import create_markdown_artifact
-from datetime import date
+from prefect_email import EmailServerCredentials
 
 
 @task(retries=3, retry_delay_seconds=2, name="Read Data to predict")
@@ -74,59 +75,67 @@ def train_best_model(
 ) -> None:
     """train a model with best hyperparams and write everything out"""
 
-    with mlflow.start_run():
-        train = xgb.DMatrix(X_train, label=y_train)
-        valid = xgb.DMatrix(X_val, label=y_val)
+    try:
 
-        best_params = {
-            "learning_rate": 0.09585355369315604,
-            "max_depth": 30,
-            "min_child_weight": 1.060597050922164,
-            "objective": "reg:linear",
-            "reg_alpha": 0.018060244040060163,
-            "reg_lambda": 0.011658731377413597,
-            "seed": 42,
-        }
+        with mlflow.start_run():
+            train = xgb.DMatrix(X_train, label=y_train)
+            valid = xgb.DMatrix(X_val, label=y_val)
 
-        mlflow.log_params(best_params)
+            best_params = {
+                "learning_rate": 0.09585355369315604,
+                "max_depth": 30,
+                "min_child_weight": 1.060597050922164,
+                "objective": "reg:linear",
+                "reg_alpha": 0.018060244040060163,
+                "reg_lambda": 0.011658731377413597,
+                "seed": 42,
+            }
 
-        booster = xgb.train(
-            params=best_params,
-            dtrain=train,
-            num_boost_round=100,
-            evals=[(valid, "validation")],
-            early_stopping_rounds=20,
-        )
+            mlflow.log_params(best_params)
 
-        y_pred = booster.predict(valid)
-        rmse = mean_squared_error(y_val, y_pred, squared=False)
-        mlflow.log_metric("rmse", rmse)
+            booster = xgb.train(
+                params=best_params,
+                dtrain=train,
+                num_boost_round=100,
+                evals=[(valid, "validation")],
+                early_stopping_rounds=20,
+            )
 
-        pathlib.Path("models").mkdir(exist_ok=True)
-        with open("models/preprocessor.b", "wb") as f_out:
-            pickle.dump(dv, f_out)
-        mlflow.log_artifact("models/preprocessor.b", artifact_path="preprocessor")
+            y_pred = booster.predict(valid)
+            rmse = mean_squared_error(y_val, y_pred, squared=False)
+            mlflow.log_metric("rmse", rmse)
 
-        mlflow.xgboost.log_model(booster, artifact_path="models_mlflow")
+            pathlib.Path("models").mkdir(exist_ok=True)
+            with open("models/preprocessor.b", "wb") as f_out:
+                pickle.dump(dv, f_out)
+            mlflow.log_artifact("models/preprocessor.b", artifact_path="preprocessor")
 
-        markdown__rmse_report = f"""
-        # RMSE Report
+            mlflow.xgboost.log_model(booster, artifact_path="models_mlflow")
 
-        ## Summary
+            markdown__rmse_report = f"""
+            # RMSE Report
 
-        Duration Prediction
+            ## Summary
 
-        ## RMSE XGBoost Model
+            Duration Prediction
 
-        | Region    | RMSE |
-        |:----------|------:|
-        | {date.today()} | {rmse:.2f} |
+            ## RMSE XGBoost Model
 
-        """
+            | Region    | RMSE |
+            |:----------|------:|
+            | {date.today()} | {rmse:.2f} |
 
-        create_markdown_artifact(
-            key="duration-model-report", markdown=markdown__rmse_report
-        )
+            """
+
+            create_markdown_artifact(
+                key="duration-model-report", markdown=markdown__rmse_report
+            )
+
+            email_credentials_block = EmailServerCredentials.load("gmail-server-notification-creds")
+
+    except Exception as e:
+        print(f'Exception occured. This is the issue = {e}')
+
 
     return None
 
