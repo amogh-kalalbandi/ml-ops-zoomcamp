@@ -1,0 +1,55 @@
+version: '3.7'
+
+volumes:
+    grafana_data: {}
+    app-python-site-packages:
+        driver: local
+    app-usr-local-bin:
+        driver: local
+
+networks:
+    front-tier:
+    back-tier:
+
+services:
+
+    server:
+        build: .
+        networks:
+            - back-tier
+        volumes:
+            - app-usr-local-bin:/usr/local/bin
+            - app-python-site-packages:/usr/local/lib/python3.8/site-packages
+
+    db:
+        image: postgres
+        restart: always
+        environment:
+            POSTGRES_PASSWORD: example
+        ports:
+            - "5431:5432"
+        networks:
+            - back-tier
+
+    adminer:
+        image: adminer
+        restart: always
+        ports:
+            - "8080:8080"
+        networks:
+            - back-tier
+            - front-tier
+
+    grafana:
+        image: grafana/grafana
+        user: "472"
+        ports:
+            - "3000:3000"
+        volumes:
+            - ./config/grafana_datasources.yaml:/etc/grafana/provisioning/datasources/datasource.yaml:ro
+            - ./config/grafana_dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
+            - ./dashboards:/opt/grafana/dashboards
+        networks:
+            - back-tier
+            - front-tier
+        restart: always
