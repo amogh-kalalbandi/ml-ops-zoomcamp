@@ -1,14 +1,9 @@
+import json
 import requests
 from deepdiff import DeepDiff
 
-event_dict = {
-    'ride': {
-        'PULocationID': 130,
-        'DOLocationID': 205,
-        'trip_distance': 3.66,
-    },
-    'ride_id': 123,
-}
+with open('event.json', 'r', encoding='utf-8') as f_open:
+    event_dict = json.loads(f_open.read())
 
 LAMBDA_URL = 'http://localhost:8080/2015-03-31/functions/function/invocations'
 actual_response = requests.post(

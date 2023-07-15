@@ -1,6 +1,3 @@
-import json
-
-
 def prepare_features(ride):
     features = {}
     features['PU_DO'] = '%s_%s' % (ride['PULocationID'], ride['DOLocationID'])

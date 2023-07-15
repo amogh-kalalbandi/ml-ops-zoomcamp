@@ -1,13 +1,7 @@
 import json
 import lambda_function
 
-event_dict = {
-    'ride': {
-        'PULocationID': 130,
-        'DOLocationID': 205,
-        'trip_distance': 3.66,
-    },
-    'ride_id': 123,
-}
+with open('event.json', 'r', encoding='utf-8') as f_open:
+    event_dict = json.loads(f_open.read())
 
 print(json.dumps(lambda_function.lambda_handler(event_dict, None)))

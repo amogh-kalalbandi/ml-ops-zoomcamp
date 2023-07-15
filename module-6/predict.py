@@ -1,4 +1,3 @@
-import pickle
 import mlflow
 
 from flask import Flask, request, jsonify

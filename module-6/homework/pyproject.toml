@@ -9,8 +9,7 @@ disable = """
     consider-using-f-string,
     invalid-name,
     unused-argument,
-    too-few-public-methods,
-    invalid-name
+    too-few-public-methods
 """
 
 [tool.black]
