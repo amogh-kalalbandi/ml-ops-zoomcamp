@@ -7,10 +7,13 @@ disable = """
     missing-function-docstring,
     missing-class-docstring,
     consider-using-f-string,
-    invalid-name,
     unused-argument,
     too-few-public-methods,
-    invalid-name
+    invalid-name,
+    line-too-long,
+    redefined-outer-name,
+    missing-module-docstring,
+    import-error
 """
 
 [tool.black]

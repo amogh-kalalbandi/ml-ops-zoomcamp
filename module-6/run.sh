@@ -2,7 +2,9 @@
 
 set -e
 
-cd "$(dirname "$0")"
+if [[ -z "${GITHUB_ACTIONS}" ]]; then
+    cd "$(dirname "$0")"
+fi
 
 export LOCAL_TAG=`date +"%Y-%m-%d-%H-%M"`
 export LOCAL_IMAGE_NAME="stream-model-duration:${LOCAL_TAG}"
