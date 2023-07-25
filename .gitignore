@@ -18,7 +18,8 @@ module-4/batch/starter.ipynb
 module-4/web-service/__pycache__/
 module-5/.ipynb_checkpoints/
 module-4/batch/score.ipynb
-/module-2/mlflow.db
-/module-3/mlflow.db
-/module-4/batch/.ipynb_checkpoints/score-checkpoint.ipynb
+mlflow.db
+module-4/batch/.ipynb_checkpoints/score-checkpoint.ipynb
 __pycache__
+module-6/infrastructure/.terraform/
+module-6/infrastructure/.terraform.lock.hcl
