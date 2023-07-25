@@ -5,8 +5,8 @@ on:
     branches:
       - 'develop'
 
-    psth:
-      - '06-best-practices/code/**'
+    path:
+      - 'module-6/**'
 
 env:
   AWS_DEFAULT_REGION: 'us-east-2'
